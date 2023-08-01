@@ -14,6 +14,8 @@ function getTerms() {
 }
 
 function cleanSlate () {
+    const paymentBreakdownDiv = document.getElementById('payment-breakdown-div');
+    const paymentBreakdownTable = document.getElementById('payment-breakdown-table');
     const paymentTitle = document.getElementById('payment-title');
     const paymentAmount = document.getElementById('payment-amount');
     const principalTitle = document.getElementById('principal-title')
@@ -22,9 +24,15 @@ function cleanSlate () {
     const totalInterestPaid = document.getElementById('total-interest');
     const costTitle = document.getElementById('cost-title');
     const totalCost = document.getElementById('total-cost');
+    const alert = document.getElementById('alert');
+    const errorMessage = document.getElementById('error-message');
+    const results = document.getElementById('results');
 
-    document.getElementById('payment-breakdown-div').classList.add('d-none')
-    document.getElementById('payment-breakdown-table').innerText = '';
+    alert.classList.add('d-none');
+    results.classList.add('d-none');
+    paymentBreakdownDiv.classList.add('d-none')
+    paymentBreakdownTable.innerText = '';
+    errorMessage.innerHTML = '';
     paymentTitle.innerText = '';
     paymentAmount.innerText = '';
     principalTitle.classList.add('d-none');
@@ -33,20 +41,21 @@ function cleanSlate () {
     totalInterestPaid.innerText = '';
     costTitle.classList.add('d-none');
     totalCost.innerText = '';
+    
 }
 
 function regex(input) {
     const outputColumn = document.getElementById('output-column');
-    const paymentTitle = document.getElementById('payment-title');
-    const paymentAmount = document.getElementById('payment-amount');
+    const errorMessage = document.getElementById('error-message');
+    const alert = document.getElementById('alert');
     const pattern = /[^0-9]/g;
 
     let numbers = input.replace(pattern, '')
     if (numbers == '') {
         outputColumn.querySelector('img').classList.add('d-none');
-        outputColumn.classList.add('alert-danger')
-        paymentTitle.innerText = 'You need to provide valid inputs';
-        paymentAmount.innerHTML += `'${input}' is not a valid entry<br>`
+        alert.classList.remove('d-none')
+        outputColumn.querySelector('.alert').classList.add('alert-danger')
+        errorMessage.innerHTML += `'${input}' is not a valid entry<br>`;
         return false;
     } else return numbers;
 }
@@ -81,7 +90,7 @@ function calculate(loanAmount, termMonths, interestRate) {
 function populateTable(month, payment, principal, interest, totalInterest, balance) {
     const paymentBreakdownTable = document.getElementById('payment-breakdown-table')
     const tableRowTemplate = document.getElementById('table-row-template');
-    
+
     let tableRowCopy = tableRowTemplate.content.cloneNode(true);
     tableRowCopy.querySelector('[data-id="month"]').innerText = month;
     tableRowCopy.querySelector('[data-id="payment"]').innerText = convertToUSD(payment);
@@ -96,6 +105,8 @@ function populateTable(month, payment, principal, interest, totalInterest, balan
 
 function displayTotals(loanAmount, totalMonthlyPayment, totalInterest) {
     const outputColumn = document.getElementById('output-column');
+    const results = document.getElementById('results');
+    const paymentBreakdownDiv = document.getElementById('payment-breakdown-div');
     const paymentTitle = document.getElementById('payment-title');
     const paymentAmount = document.getElementById('payment-amount');
     const principalTitle = document.getElementById('principal-title')
@@ -105,12 +116,10 @@ function displayTotals(loanAmount, totalMonthlyPayment, totalInterest) {
     const costTitle = document.getElementById('cost-title');
     const totalCost = document.getElementById('total-cost');
 
-    // wipe potential earlier failure message 
-    outputColumn.classList.remove('alert-danger')
-
-    // hide graphic and show table
+    // hide graphic, show results and table
     outputColumn.querySelector('img').classList.add('d-none');
-    document.getElementById('payment-breakdown-div').classList.remove('d-none')
+    results.classList.remove('d-none')
+    paymentBreakdownDiv.classList.remove('d-none')
 
     paymentTitle.innerText = 'Your Monthly Payments';
     paymentAmount.innerText = `${convertToUSD(totalMonthlyPayment)}`;

@@ -65,9 +65,13 @@
 
     <main class="container py-3">
         <div class="row row-cols-1 row-cols-md-2 g-3">
-            <div id="output-column" class="alert col-12 col-md-8 order-md-last text-center">
+            <div id="output-column" class="col-12 col-md-8 order-md-last text-center">
                 <img class="img-fluid p-3" src="/img/Sure-Mortgage_small.png" alt="Sure Mortgage Logo">
-                <div class="row">
+                <div id="alert" class="alert d-none">
+                    <h5>You need to provide valid inputs</h5>
+                    <h4 id="error-message"><!-- error message here --></h4>
+                </div>
+                <div id="results" class="row d-none">
                     <div class="col-12 text-center">
                         <h5 id="payment-title"></h5>
                     </div>
@@ -75,19 +79,19 @@
                         <h3 id="payment-amount"></h3>
                     </div>
                     <div class="col-6 text-center">
-                        <span id="principal-title" class="d-none">Total Principal</span>
+                        <span id="principal-title">Total Principal</span>
                     </div>
                     <div class="col-6 text-center">
                         <span id="total-principal"><!-- total prinicipal output --></span>
                     </div>
                     <div class="col-6 text-center">
-                        <span id="interest-title" class="d-none">Total Interest</span>
+                        <span id="interest-title">Total Interest</span>
                     </div>
                     <div class="col-6 text-center">
                         <span id="total-interest"><!-- total interest output --></span>
                     </div>
                     <div class="col-6 text-center">
-                        <span id="cost-title" class="d-none">Total Cost</span>
+                        <span id="cost-title">Total Cost</span>
                     </div>
                     <div class="col-6 text-center">
                         <span id="total-cost"><!-- total cost output --></span>
@@ -97,11 +101,11 @@
             <div id="input-column" class="col-12 col-md-4">
                 <form id="loan-terms-form">
                     <label for="loan-amount" class="form-label">Loan Amount</label>
-                    <input id="loan-amount" type="text" class="form-control" placeholder="Loan" required>
+                    <input id="loan-amount" type="number" class="form-control" placeholder="Loan" required>
                     <label for="term-months" class="form-label">Term (Months)</label>
-                    <input id="term-months" type="text" class="form-control" placeholder="Months" required>
+                    <input id="term-months" type="number" class="form-control" placeholder="Months" required>
                     <label for="interest-rate" class="form-label">Interest Rate</label>
-                    <input id="interest-rate" type="text" class="form-control" placeholder="%" required>
+                    <input id="interest-rate" type="number" class="form-control" placeholder="Interest" required>
                     <p class="text-end">
                         <button type="submit" class="btn btn-primary mt-3">Calculate</button>
                     </p>

@@ -63,12 +63,13 @@ body {
     background-color: var(--ce-theme-850);
 }
 
-.text-accent {
-    color: var(--ce-accent-250) !important;
+.app-logo {
+    width: 500px;
+    height: 500px;
 }
 
-.app-logo {
-    max-width: 400px;
+.text-accent {
+    color: var(--ce-accent-250) !important;
 }
 
 .checklist i {

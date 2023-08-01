@@ -1,4 +1,6 @@
 function getTerms() {
+    cleanSlate()
+
     let loanAmountInput = document.getElementById('loan-amount').value;
     let loanAmount = parseFloat(regex(loanAmountInput));
 
@@ -9,11 +11,9 @@ function getTerms() {
     let interestRate = parseFloat(regex(interestRateInput));
 
     isNaN(loanAmount) || isNaN(termMonths) || isNaN(interestRate) ? '' : calculate(loanAmount, termMonths, interestRate)
-    // displayTotals()
 }
 
-function regex(input) {
-    const outputColumn = document.getElementById('output-column');
+function cleanSlate () {
     const paymentTitle = document.getElementById('payment-title');
     const paymentAmount = document.getElementById('payment-amount');
     const principalTitle = document.getElementById('principal-title')
@@ -22,9 +22,9 @@ function regex(input) {
     const totalInterestPaid = document.getElementById('total-interest');
     const costTitle = document.getElementById('cost-title');
     const totalCost = document.getElementById('total-cost');
-    const pattern = /[^0-9]/g;
 
-    // clear any earlier successes
+    document.getElementById('payment-breakdown-div').classList.add('d-none')
+    document.getElementById('payment-breakdown-table').innerText = '';
     paymentTitle.innerText = '';
     paymentAmount.innerText = '';
     principalTitle.classList.add('d-none');
@@ -33,35 +33,46 @@ function regex(input) {
     totalInterestPaid.innerText = '';
     costTitle.classList.add('d-none');
     totalCost.innerText = '';
+}
+
+function regex(input) {
+    const outputColumn = document.getElementById('output-column');
+    const paymentTitle = document.getElementById('payment-title');
+    const paymentAmount = document.getElementById('payment-amount');
+    const pattern = /[^0-9]/g;
 
     let numbers = input.replace(pattern, '')
     if (numbers == '') {
         outputColumn.querySelector('img').classList.add('d-none');
         outputColumn.classList.add('alert-danger')
         paymentTitle.innerText = 'You need to provide valid inputs';
-        paymentAmount.innerText = `'${input}' is not a valid entry`
+        paymentAmount.innerHTML += `'${input}' is not a valid entry<br>`
         return false;
     } else return numbers;
 }
 
-function roundToCents(number) {
-    return Math.round((number + Number.EPSILON) * 100) / 100
+function convertToUSD(number) {
+    const USDollar = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+    });
+
+    numberToNearestCent = Math.round((number + Number.EPSILON) * 100) / 100;
+
+    return USDollar.format(numberToNearestCent)
 }
 
 function calculate(loanAmount, termMonths, interestRate) {
     let balance = loanAmount;
     let totalInterest = 0;
     let totalMonthlyPayment = loanAmount * ((interestRate / 1200) / (1 - ((1 + interestRate / 1200)) ** -(termMonths)))
-    totalMonthlyPayment = roundToCents(totalMonthlyPayment);
 
     for (i = 0; i < termMonths; i++) {
         let interestPayment = balance * (interestRate / 1200);
-        interestPayment = roundToCents(interestPayment);
-        totalInterest = roundToCents(totalInterest + interestPayment);
+        totalInterest += interestPayment;
 
-        let principalPayment = roundToCents(totalMonthlyPayment - interestPayment);
-        balance = roundToCents(balance - principalPayment);
-        // if (i == termMonths - 1 && balance != 0)
+        let principalPayment = totalMonthlyPayment - interestPayment;
+        balance -= principalPayment;
         populateTable(i + 1, totalMonthlyPayment, principalPayment, interestPayment, totalInterest, balance);
     }
     displayTotals(loanAmount, totalMonthlyPayment, totalInterest)
@@ -70,13 +81,16 @@ function calculate(loanAmount, termMonths, interestRate) {
 function populateTable(month, payment, principal, interest, totalInterest, balance) {
     const paymentBreakdownTable = document.getElementById('payment-breakdown-table')
     const tableRowTemplate = document.getElementById('table-row-template');
+    
     let tableRowCopy = tableRowTemplate.content.cloneNode(true);
     tableRowCopy.querySelector('[data-id="month"]').innerText = month;
-    tableRowCopy.querySelector('[data-id="payment"]').innerText = payment;
-    tableRowCopy.querySelector('[data-id="principal"]').innerText = principal;
-    tableRowCopy.querySelector('[data-id="interest"]').innerText = interest;
-    tableRowCopy.querySelector('[data-id="totalInterest"]').innerText = totalInterest;
-    tableRowCopy.querySelector('[data-id="balance"]').innerText = balance;
+    tableRowCopy.querySelector('[data-id="payment"]').innerText = convertToUSD(payment);
+    tableRowCopy.querySelector('[data-id="principal"]').innerText = convertToUSD(principal);
+    tableRowCopy.querySelector('[data-id="interest"]').innerText = convertToUSD(interest);
+    tableRowCopy.querySelector('[data-id="totalInterest"]').innerText = convertToUSD(totalInterest);
+    if (balance < 0) tableRowCopy.querySelector('[data-id="balance"]').innerText = '$0.00';
+    else tableRowCopy.querySelector('[data-id="balance"]').innerText = convertToUSD(balance);
+
     paymentBreakdownTable.appendChild(tableRowCopy);
 }
 
@@ -90,10 +104,6 @@ function displayTotals(loanAmount, totalMonthlyPayment, totalInterest) {
     const totalInterestPaid = document.getElementById('total-interest');
     const costTitle = document.getElementById('cost-title');
     const totalCost = document.getElementById('total-cost');
-    const USDollar = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    });
 
     // wipe potential earlier failure message 
     outputColumn.classList.remove('alert-danger')
@@ -103,14 +113,14 @@ function displayTotals(loanAmount, totalMonthlyPayment, totalInterest) {
     document.getElementById('payment-breakdown-div').classList.remove('d-none')
 
     paymentTitle.innerText = 'Your Monthly Payments';
-    paymentAmount.innerText = `${totalMonthlyPayment}`;
+    paymentAmount.innerText = `${convertToUSD(totalMonthlyPayment)}`;
 
     principalTitle.classList.remove('d-none');
-    totalPrincipalPaid.innerText = USDollar.format(loanAmount);
+    totalPrincipalPaid.innerText = convertToUSD(loanAmount);
 
     interestTitle.classList.remove('d-none');
-    totalInterestPaid.innerText = USDollar.format(totalInterest);
+    totalInterestPaid.innerText = convertToUSD(totalInterest);
 
     costTitle.classList.remove('d-none');
-    totalCost.innerText = USDollar.format(loanAmount + totalInterest);
+    totalCost.innerText = convertToUSD(loanAmount + totalInterest);
 }

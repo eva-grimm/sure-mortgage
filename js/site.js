@@ -13,16 +13,12 @@ function getTerms() {
     isNaN(loanAmount) || isNaN(termMonths) || isNaN(interestRate) ? '' : calculate(loanAmount, termMonths, interestRate)
 }
 
-function cleanSlate () {
+function cleanSlate() {
     const paymentBreakdownDiv = document.getElementById('payment-breakdown-div');
     const paymentBreakdownTable = document.getElementById('payment-breakdown-table');
-    const paymentTitle = document.getElementById('payment-title');
     const paymentAmount = document.getElementById('payment-amount');
-    const principalTitle = document.getElementById('principal-title')
     const totalPrincipalPaid = document.getElementById('total-principal');
-    const interestTitle = document.getElementById('interest-title');
     const totalInterestPaid = document.getElementById('total-interest');
-    const costTitle = document.getElementById('cost-title');
     const totalCost = document.getElementById('total-cost');
     const alert = document.getElementById('alert');
     const errorMessage = document.getElementById('error-message');
@@ -33,25 +29,20 @@ function cleanSlate () {
     paymentBreakdownDiv.classList.add('d-none')
     paymentBreakdownTable.innerText = '';
     errorMessage.innerHTML = '';
-    paymentTitle.innerText = '';
     paymentAmount.innerText = '';
-    principalTitle.classList.add('d-none');
     totalPrincipalPaid.innerText = '';
-    interestTitle.classList.add('d-none');
     totalInterestPaid.innerText = '';
-    costTitle.classList.add('d-none');
     totalCost.innerText = '';
-    
 }
 
 function regex(input) {
-    const outputColumn = document.getElementById('output-column');
-    const errorMessage = document.getElementById('error-message');
-    const alert = document.getElementById('alert');
     const pattern = /[^0-9]/g;
-
     let numbers = input.replace(pattern, '')
     if (numbers == '') {
+        const outputColumn = document.getElementById('output-column');
+        const errorMessage = document.getElementById('error-message');
+        const alert = document.getElementById('alert');
+
         outputColumn.querySelector('img').classList.add('d-none');
         alert.classList.remove('d-none')
         outputColumn.querySelector('.alert').classList.add('alert-danger')
@@ -60,29 +51,18 @@ function regex(input) {
     } else return numbers;
 }
 
-function convertToUSD(number) {
-    const USDollar = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    });
-
-    numberToNearestCent = Math.round((number + Number.EPSILON) * 100) / 100;
-
-    return USDollar.format(numberToNearestCent)
-}
-
 function calculate(loanAmount, termMonths, interestRate) {
     let balance = loanAmount;
     let totalInterest = 0;
-    let totalMonthlyPayment = loanAmount * ((interestRate / 1200) / (1 - ((1 + interestRate / 1200)) ** -(termMonths)))
+    let totalMonthlyPayment = loanAmount * ((interestRate / 1200) / (1 - (1 + interestRate / 1200) ** -(termMonths)))
 
-    for (i = 0; i < termMonths; i++) {
+    for (i = 1; i <= termMonths; i++) {
         let interestPayment = balance * (interestRate / 1200);
         totalInterest += interestPayment;
 
         let principalPayment = totalMonthlyPayment - interestPayment;
         balance -= principalPayment;
-        populateTable(i + 1, totalMonthlyPayment, principalPayment, interestPayment, totalInterest, balance);
+        populateTable(i, totalMonthlyPayment, principalPayment, interestPayment, totalInterest, balance);
     }
     displayTotals(loanAmount, totalMonthlyPayment, totalInterest)
 }
@@ -107,29 +87,27 @@ function displayTotals(loanAmount, totalMonthlyPayment, totalInterest) {
     const outputColumn = document.getElementById('output-column');
     const results = document.getElementById('results');
     const paymentBreakdownDiv = document.getElementById('payment-breakdown-div');
-    const paymentTitle = document.getElementById('payment-title');
     const paymentAmount = document.getElementById('payment-amount');
-    const principalTitle = document.getElementById('principal-title')
     const totalPrincipalPaid = document.getElementById('total-principal');
-    const interestTitle = document.getElementById('interest-title');
     const totalInterestPaid = document.getElementById('total-interest');
-    const costTitle = document.getElementById('cost-title');
     const totalCost = document.getElementById('total-cost');
 
-    // hide graphic, show results and table
+    // hide app logo, show results and table
     outputColumn.querySelector('img').classList.add('d-none');
     results.classList.remove('d-none')
     paymentBreakdownDiv.classList.remove('d-none')
 
-    paymentTitle.innerText = 'Your Monthly Payments';
-    paymentAmount.innerText = `${convertToUSD(totalMonthlyPayment)}`;
-
-    principalTitle.classList.remove('d-none');
+    paymentAmount.innerText = convertToUSD(totalMonthlyPayment);
     totalPrincipalPaid.innerText = convertToUSD(loanAmount);
-
-    interestTitle.classList.remove('d-none');
     totalInterestPaid.innerText = convertToUSD(totalInterest);
-
-    costTitle.classList.remove('d-none');
     totalCost.innerText = convertToUSD(loanAmount + totalInterest);
+}
+
+function convertToUSD(number) {
+    const USDollar = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+    });
+    let numberToNearestCent = number.toFixed(2);
+    return USDollar.format(numberToNearestCent)
 }

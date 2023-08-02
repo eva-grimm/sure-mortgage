@@ -66,15 +66,11 @@
 
     <main class="container py-3">
         <div class="row row-cols-1 row-cols-md-2">
-            <div id="output-column" class="col-12 col-md-8 order-md-last text-center">
-                <img class="app-logo p-3" src="/img/Sure-Mortgage.png" alt="Sure Mortgage Logo">
-                <div id="alert" class="alert d-none">
-                    <h5>You need to provide valid inputs</h5>
-                    <h4 id="error-message"><!-- error message here --></h4>
-                </div>
-                <div id="results" class="row text-center d-none">
-                    <div class="col-6 pt-3 ps-3 text-start">
-                        <p class="fw-bold">
+            <div class="col-12 col-md-8 order-md-last text-center">
+                <img id="large-logo" class="app-logo p-3" src="/img/Sure-Mortgage.png" alt="Sure Mortgage Logo">
+                <div id="results" class="row row-cols-1 row-cols-md-2 text-center d-none">
+                    <div class="col pt-3 ps-3 text-start">
+                        <p class="fs-4 fw-bolder">
                             <span id="payment-title">Monthly Payment: </span>
                             <span id="payment-amount"><!-- monthly payment --></span>
                         </p>
@@ -91,19 +87,19 @@
                             <span id="total-cost"><!-- total cost output --></span>
                         </p>
                     </div>
-                    <div class="col-6">
-                        <img class="p-3" width="200" height="200" src="/img/Sure-Mortgage.png" alt="Sure Mortgage Logo">
+                    <div class="col d-none d-md-block">
+                        <img class="p-3" width="250" height="250" src="/img/Sure-Mortgage.png" alt="Sure Mortgage Logo">
                     </div>
                 </div>
             </div>
             <div id="input-column" class="col-12 col-md-4">
                 <form id="loan-terms-form">
                     <label for="loan-amount" class="form-label">Loan Amount</label>
-                    <input id="loan-amount" type="number" class="form-control" placeholder="Loan" required>
+                    <input id="loan-amount" type="number" class="form-control" step=".01" placeholder="Loan" required>
                     <label for="term-months" class="form-label">Term (Months)</label>
                     <input id="term-months" type="number" class="form-control" placeholder="Months" required>
                     <label for="interest-rate" class="form-label">Interest Rate</label>
-                    <input id="interest-rate" type="number" class="form-control" placeholder="Interest" required>
+                    <input id="interest-rate" type="number" class="form-control" step=".001" placeholder="Interest" required>
                     <p class="text-end">
                         <button type="submit" class="btn btn-primary mt-3">Calculate</button>
                     </p>
@@ -174,7 +170,6 @@
 
     <!-- Custom JS -->
     <script src="/js/site.js"></script>
-
     <script>
         let form = document.getElementById('loan-terms-form');
         form.addEventListener('submit', (evt) => {

@@ -99,3 +99,7 @@ body {
 .social-icons:hover {
     color: var(--ce-accent-300)
 }
+
+th {
+    white-space: nowrap;
+}

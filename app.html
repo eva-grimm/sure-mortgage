@@ -101,7 +101,7 @@
                     <label for="interest-rate" class="form-label">Interest Rate</label>
                     <input id="interest-rate" type="number" class="form-control" step=".001" placeholder="Interest" required>
                     <p class="text-end">
-                        <button type="submit" class="btn btn-primary mt-3">Calculate</button>
+                        <button type="button" class="btn btn-primary mt-3" onclick="getTerms()">Calculate</button>
                     </p>
                 </form>
             </div>
@@ -170,13 +170,6 @@
 
     <!-- Custom JS -->
     <script src="/js/site.js"></script>
-    <script>
-        let form = document.getElementById('loan-terms-form');
-        form.addEventListener('submit', (evt) => {
-            evt.preventDefault();
-            getTerms()
-        });
-    </script>
 </body>
 
 </html>

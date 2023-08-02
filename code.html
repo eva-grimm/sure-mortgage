@@ -75,106 +75,111 @@
                     <code class="language-js">
                         function getTerms() {
                             cleanSlate()
+                            let loan = {}
                         
-                            let loanAmountInput = document.getElementById('loan-amount').value;
-                            let loanAmount = parseFloat(regex(loanAmountInput));
+                            loan.loanAmount = document.getElementById('loan-amount').value;
+                            loan.loanAmount = parseFloat(loan.loanAmount);
                         
-                            let termMonthsInput = document.getElementById('term-months').value;
-                            let termMonths = parseInt(regex(termMonthsInput));
+                            loan.termMonths = document.getElementById('term-months').value;
+                            loan.termMonths = parseInt(loan.termMonths);
                         
-                            let interestRateInput = document.getElementById('interest-rate').value;
-                            let interestRate = parseFloat(regex(interestRateInput));
+                            loan.interestRate = document.getElementById('interest-rate').value;
+                            loan.interestRate = parseFloat(loan.interestRate);
                         
-                            isNaN(loanAmount) || isNaN(termMonths) || isNaN(interestRate) ? '' : calculate(loanAmount, termMonths, interestRate)
+                            if (isNaN(loan.loanAmount) || isNaN(loan.termMonths) || isNaN(loan.interestRate)
+                                || loan.loanAmount &lt;= 0 || loan.termMonths &lt;= 0 || loan.interestRate &lt;= 0) {
+                                Swal.fire({
+                                    title: 'Oops!',
+                                    text: 'Sorry, but there\'s a problem with your inputs. Please only use numbers greater than 0.',
+                                    icon: 'error',
+                                    backdrop: false
+                                });
+                            } else {
+                                loan = calculateTotals(loan);
+                                loan = calculateBreakdown(loan);
+                                displayResults();
+                            }
                         }
                         
                         function cleanSlate() {
+                            const largeLogo = document.getElementById('large-logo');
                             const paymentBreakdownDiv = document.getElementById('payment-breakdown-div');
                             const paymentBreakdownTable = document.getElementById('payment-breakdown-table');
                             const paymentAmount = document.getElementById('payment-amount');
                             const totalPrincipalPaid = document.getElementById('total-principal');
                             const totalInterestPaid = document.getElementById('total-interest');
                             const totalCost = document.getElementById('total-cost');
-                            const alert = document.getElementById('alert');
-                            const errorMessage = document.getElementById('error-message');
                             const results = document.getElementById('results');
                         
-                            alert.classList.add('d-none');
-                            results.classList.add('d-none');
+                            largeLogo.classList.remove('d-none');
                             paymentBreakdownDiv.classList.add('d-none')
                             paymentBreakdownTable.innerText = '';
-                            errorMessage.innerHTML = '';
                             paymentAmount.innerText = '';
                             totalPrincipalPaid.innerText = '';
                             totalInterestPaid.innerText = '';
                             totalCost.innerText = '';
+                            results.classList.add('d-none');
                         }
                         
-                        function regex(input) {
-                            const pattern = /[^0-9\-]/g;
-                            let numbers = input.replace(pattern, '')
-                            if (numbers == '' || numbers &lt;= 0) {
-                                const outputColumn = document.getElementById('output-column');
-                                const errorMessage = document.getElementById('error-message');
-                                const alert = document.getElementById('alert');
-                        
-                                outputColumn.querySelector('img').classList.add('d-none');
-                                alert.classList.remove('d-none')
-                                outputColumn.querySelector('.alert').classList.add('alert-danger')
-                                errorMessage.innerHTML += `'${input}' is not a valid entry&lt;br>`;
-                            } else return numbers;
+                        function calculateTotals(loan) {
+                            loan.totalMonthlyPayment = loan.loanAmount * ((loan.interestRate / 1200) / (1 - (1 + loan.interestRate / 1200) ** -(loan.termMonths)))
+                            loan.totalCost = loan.totalMonthlyPayment * loan.termMonths;
+                            loan.totalInterest = loan.totalCost - loan.loanAmount;
+                            populateTotals(loan);
+                            return loan;
                         }
                         
-                        function calculate(loanAmount, termMonths, interestRate) {
-                            let balance = loanAmount;
-                            let totalInterest = 0;
-                            let totalMonthlyPayment = loanAmount * ((interestRate / 1200) / (1 - (1 + interestRate / 1200) ** -(termMonths)))
-                        
-                            for (i = 1; i &lt;= termMonths; i++) {
-                                let interestPayment = balance * (interestRate / 1200);
-                                totalInterest += interestPayment;
-                        
-                                let principalPayment = totalMonthlyPayment - interestPayment;
-                                balance -= principalPayment;
-                                populateTable(i, totalMonthlyPayment, principalPayment, interestPayment, totalInterest, balance);
-                            }
-                            displayTotals(loanAmount, totalMonthlyPayment, totalInterest)
-                        }
-                        
-                        function populateTable(month, payment, principal, interest, totalInterest, balance) {
-                            const paymentBreakdownTable = document.getElementById('payment-breakdown-table')
-                            const tableRowTemplate = document.getElementById('table-row-template');
-                        
-                            let tableRowCopy = tableRowTemplate.content.cloneNode(true);
-                            tableRowCopy.querySelector('[data-id="month"]').innerText = month;
-                            tableRowCopy.querySelector('[data-id="payment"]').innerText = convertToUSD(payment);
-                            tableRowCopy.querySelector('[data-id="principal"]').innerText = convertToUSD(principal);
-                            tableRowCopy.querySelector('[data-id="interest"]').innerText = convertToUSD(interest);
-                            tableRowCopy.querySelector('[data-id="totalInterest"]').innerText = convertToUSD(totalInterest);
-                            if (balance &lt; 0) tableRowCopy.querySelector('[data-id="balance"]').innerText = '$0.00';
-                            else tableRowCopy.querySelector('[data-id="balance"]').innerText = convertToUSD(balance);
-                        
-                            paymentBreakdownTable.appendChild(tableRowCopy);
-                        }
-                        
-                        function displayTotals(loanAmount, totalMonthlyPayment, totalInterest) {
-                            const outputColumn = document.getElementById('output-column');
-                            const results = document.getElementById('results');
-                            const paymentBreakdownDiv = document.getElementById('payment-breakdown-div');
+                        function populateTotals(loan) {
                             const paymentAmount = document.getElementById('payment-amount');
                             const totalPrincipalPaid = document.getElementById('total-principal');
                             const totalInterestPaid = document.getElementById('total-interest');
-                            const totalCost = document.getElementById('total-cost');
+                            const totalCostPaid = document.getElementById('total-cost');
                         
-                            // hide app logo, show results and table
-                            outputColumn.querySelector('img').classList.add('d-none');
+                            paymentAmount.innerText = convertToUSD(loan.totalMonthlyPayment);
+                            totalPrincipalPaid.innerText = convertToUSD(loan.loanAmount);
+                            totalInterestPaid.innerText = convertToUSD(loan.totalInterest);
+                            totalCostPaid.innerText = convertToUSD(loan.totalCost);
+                        }
+                        
+                        function calculateBreakdown(loan) {
+                            let currentMonthPayment = {}
+                            currentMonthPayment.balance = loan.loanAmount;
+                            currentMonthPayment.totalInterestPaid = 0;
+                            for (i = 1; i &lt;= loan.termMonths; i++) {
+                                currentMonthPayment.month = i;
+                                currentMonthPayment.interestPayment = currentMonthPayment.balance * (loan.interestRate / 1200);
+                                currentMonthPayment.principalPayment = loan.totalMonthlyPayment - currentMonthPayment.interestPayment;
+                                currentMonthPayment.totalInterestPaid += currentMonthPayment.interestPayment
+                                currentMonthPayment.balance -= currentMonthPayment.principalPayment;
+                                populateBreakdown(loan, currentMonthPayment);
+                            }
+                            return loan;
+                        }
+                        
+                        function populateBreakdown(loan, currentMonthPayment) {
+                            const tableRowTemplate = document.getElementById('table-row-template');
+                            const paymentBreakdownTable = document.getElementById('payment-breakdown-table');
+                        
+                            let tableRowCopy = tableRowTemplate.content.cloneNode(true);
+                            tableRowCopy.querySelector('[data-id="month"]').innerText = currentMonthPayment.month;
+                            tableRowCopy.querySelector('[data-id="payment"]').innerText = convertToUSD(loan.totalMonthlyPayment);
+                            tableRowCopy.querySelector('[data-id="principal"]').innerText = convertToUSD(currentMonthPayment.principalPayment);
+                            tableRowCopy.querySelector('[data-id="interest"]').innerText = convertToUSD(currentMonthPayment.interestPayment);
+                            tableRowCopy.querySelector('[data-id="totalInterest"]').innerText = convertToUSD(currentMonthPayment.totalInterestPaid);
+                            if (currentMonthPayment.balance &lt; 0) tableRowCopy.querySelector('[data-id="balance"]').innerText = '$0.00';
+                            else tableRowCopy.querySelector('[data-id="balance"]').innerText = convertToUSD(currentMonthPayment.balance);
+                        
+                            paymentBreakdownTable.appendChild(tableRowCopy)
+                        }
+                        
+                        function displayResults() {
+                            const largeLogo = document.getElementById('large-logo');
+                            const results = document.getElementById('results');
+                            const paymentBreakdownDiv = document.getElementById('payment-breakdown-div');
+                        
+                            largeLogo.classList.add('d-none');
                             results.classList.remove('d-none')
                             paymentBreakdownDiv.classList.remove('d-none')
-                        
-                            paymentAmount.innerText = convertToUSD(totalMonthlyPayment);
-                            totalPrincipalPaid.innerText = convertToUSD(loanAmount);
-                            totalInterestPaid.innerText = convertToUSD(totalInterest);
-                            totalCost.innerText = convertToUSD(loanAmount + totalInterest);
                         }
                         
                         function convertToUSD(number) {
@@ -191,9 +196,9 @@
             <div class="col-12 col-lg-4">
                 <p>
                     This applet is a loan calculator that takes the basic terms of a loan and provides the overall costs
-                    of it and a breakdown of each month's payment. It is structured in seven functions, and its HTML
-                    includes one template and an eventListener. The eventListener calls the entry point, getTerms().
-                    Let's dive in.
+                    of it and a breakdown of each month's payment. It is structured in eight functions, and its HTML
+                    includes one template. The entry point, getTerms(), is called using an onclick attribute on the
+                    submit button. Let's dive in.
                 </p>
 
                 <h5>The Template</h5>
@@ -203,95 +208,86 @@
                     populateTable() to build the loan breakdown table at the bottom of the applet page.
                 </p>
 
-                <h5>The Event Listener</h5>
-                <p>
-                    The applet's HTML has an event listener embedded using a script tag. The script gets the form used
-                    to obtain the loan terms, and it listens for a submit event. Once triggered, it prevents the page
-                    from reloading and calls getTerms().
-                </p>
-
                 <h5>getTerms()</h5>
                 <p>
                     This function is the entry point of the applet and sets the stage for the applet to process the
                     provided loan terms. It begins by calling cleanSlate() to reset the HTML elements to their defaults
-                    (other than the app logo being visible). It then retrieves the loan terms, runs passes each to
-                    regex() as an argument, and parses the results as floats (except for term months, which is parsed as
-                    an integer). It finally checks whether any of the provided terms is not a number, which will be the
-                    case if any of the values provided by the user are not numbers greater than 0. If all is will, it
-                    calls calculate(), passing the loan amount, term in months, and interest rate as arguments.
+                    then declares a blank object, 'loan'. It next retrieves the loan terms, parses each results as
+                    floats (except for term months, which is parsed as an integer), and assigns them to loan as
+                    properties. It finally checks whether any of the provided terms is not a number or is 0 or less.
+                </p>
+                <p>
+                    If the properties are all valid, the function calls calculateTotals(), passing loan as an argument
+                    and assigning the result to loan. Next, it calls calculateBreakdown(), again passing loan as an
+                    argument and assigning the result to loan. Finally, it calls displayResults().
                 </p>
 
                 <h5>cleanSlate()</h5>
                 <p>
-                    This function's purpose is to reset the HTML elements to their defaults. The sole exception is the
-                    large app logo, which remains invisible. All elements in the HTML that are changed using DOM
-                    manipulation during use of the applet are found and declared as constants, then those constants are
-                    set te their default states.
+                    This function's purpose is to reset the HTML elements to their defaults. All elements in the HTML
+                    that are changed with DOM manipulation during use of the applet are found and declared as constants,
+                    then those constants are set te their default states.
                 </p>
 
-                <h5>regex()</h5>
+                <h5>calculateTotals()</h5>
                 <p>
-                    This function's purpose is verifying the user has provided a valid input, which it accepts as an
-                    argument, 'input'. It begins by declaring a constant, global regex pattern that excludes anything
-                    that is not the numbers 0-9 or a '-', then it uses that pattern to remove all characters in input
-                    that do not match the pattern.
-                </p>
-                <p>
-                    Once the pattern is run, the function checks if input is now a blank string or a negative number. If
-                    so, it finds the HTML elements it needs to display an error message and declares them as constants.
-                    It then displays an error message that explains the input data is bad, which inputs are at issue,
-                    and will not return a value, ensuring getTerms() does not run calculate() later.
-                </p>
-                <p>
-                    If the input is blank after excluding non-numbers, then the function returns a boolean of false.
-                    Otherwise, it returns the processed input.
+                    This function's purpose is to calculate the total monthly loan payment, total cost, and total
+                    interest paid over the course of the loan. It accepts the loan object as a parameter, and assigns
+                    each of the totals to loan as new properties. Once the totals have been determined, the function
+                    calls populateTotals() to display the totals on the applet page then returns the loan object.
                 </p>
 
-                <h5>calculate()</h5>
+                <h5>populateTotals()</h5>
                 <p>
-                    This function's purpose is to calculate the monthly loan payment and the breakdown of each month's
-                    loan payment. It accepts as parameters the loan terms: the loan amount, the loan term, and the
-                    interest rate. It begins by declaring a variable, 'balance', and sets its value to the loan amount
-                    (these are equivalent at the beginning of the loan). It then declares 'totalInterest' as 0, which
-                    will be used to keep a running tally of interest payments to be displayed later.
+                    This function's purpose is to dispay the total monthly loan payment, total cost, and total interest
+                    paid over the course of the loan on the applet page. It accepts as a paremeter the object loan,
+                    which contains these properties. The function finds the locations on the applet page these
+                    properties should be displayed, declares them as constants, then uses DOM manipulation to change
+                    each location's inner text to the respective property.
+                </p>
+
+                <h5>calculateBreakdown</h5>
+                <p>
+                    This function's purpose is to develop a breakdown of how much of each month's payment is principle
+                    and interest and how much balance remains that month. The function accepts the loan object and
+                    begins by declaring 'currentMonthPayment' as a blank object. It then creates balance and
+                    totalInterestPaid properties for currentMonthPayment, respectively assigning them the value of
+                    loan's loanAmount property and 0.
                 </p>
                 <p>
                     The function then starts a for-loop with an index, 'i', equal to 1 and iterates the loop while the
-                    index is less than or equal to the months in the loan term. The loop begins by establishing that
-                    months interest payment and adding that payment to totalInterest. It then determines the principal
-                    payment and subtracts it from balance. Finally, it calls populateTable() and passes index, total
-                    monthly payment, principal payment, interest payment, totalInterest, and balance as arguments.
+                    index is less than or equal to the termMonths property of loan. The loop begins by creating new
+                    properties for currentMonthPayment: a month property with the value of the index, an interestPayment
+                    property with the value of that month's interest payment, and a principalPayment property with the
+                    value of that month's principal payment. It next sets currentMonthPayment.totalInterestPaid to
+                    itself plus interestPayment and sets currentMonthPayment.principalPayment to itself less
+                    principalPayment. The last step of the for-loop is calling populateBreakdown() and passing it loan
+                    and currentMonthPayment objects.
                 </p>
                 <p>
-                    Once the for-loop is done iterating through each month, the function calls displayTotals() and
-                    passes the loan amount, total monthly payment, and total interest as arguments.
+                    Once the for-loop is done iterating through each month, the function returns the loan object.
                 </p>
 
                 <h5>populateTable()</h5>
                 <p>
                     This function's purpose is to generate a table that displays the breakdown of each monthly payment.
-                    It accepts as parameters the elements that will go into each cell in the row. The function begins by
-                    finding the table and the row template and declaring them as constants.
+                    It accepts as parameters the loan and currentMonthPayment objects. The function begins by finding
+                    the payment breakdown table and the row template and declaring them as constants.
                 </p>
                 <p>
-                    The function then clones the template and applies each of the parameters to their respective table
-                    row cell. All parameters except month are formatted by passing the parameters as arguments to
-                    convertToUSD(), and if balance is negative, then the string '$0.00' is applied to that table cell
-                    instead. Once the clone is filled with the parameters, it is appended to the table.
+                    The function then clones the template and adds properties of loan and currentMonthPayment to their
+                    respective table row cells. All parameters except currentMonthPayment.month are formatted by passing
+                    the parameters as arguments to convertToUSD(). Additionally, if currentMonthPayment.balance is
+                    negative, then the string '$0.00' is applied to that table cell instead. Once the clone is filled
+                    with the parameters, it is appended to the payment breakdown table.
                 </p>
 
-                <h5>displayTotals()</h5>
+                <h5>displayResults()</h5>
                 <p>
-                    This function's purpose is to place the last pieces of the loan in the applet HTML and make all the
-                    loan elements generated through earlier functions visible to the user. The function begins by
-                    finding each of the HTML elements it will be changing with DOM manipulation and declaring them as
-                    constants.
-                </p>
-                <p>
-                    Once the constants are declared, the function hides the large app logo (this is only necessary on
-                    the first run of the applet) and makes the results and table visible. The function then passes the
-                    total monthly payment, total principle, total interest, and total cost to convertToUSD() and places
-                    the returned values into results.
+                    This function's purpose is to show the totals and payment breakdown table. The function begins by
+                    finding the HTML elements with the 'large-logo', 'results', and 'payment-breakdown-div' IDs and
+                    assigning them as the constants largeLogo, results, and paymentBreakdownDiv. It then adds a 'd-none'
+                    class to largeLogo and removes the 'd-none' class to results and paymentBreakdownDiv.
                 </p>
 
                 <h5>convertToUSD()</h5>

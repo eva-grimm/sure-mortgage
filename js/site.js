@@ -67,28 +67,32 @@ function populateTotals(loan) {
 }
 
 function calculateBreakdown(loan) {
-    let balance = loan.loanAmount;
+    let currentMonthPayment = {}
+    currentMonthPayment.balance = loan.loanAmount;
+    currentMonthPayment.totalInterestPaid = 0;
     for (i = 1; i <= loan.termMonths; i++) {
-        let interestPayment = balance * (loan.interestRate / 1200);
-        let principalPayment = loan.totalMonthlyPayment - interestPayment;
-        balance -= principalPayment;
-        populateBreakdown(i, loan, principalPayment, interestPayment, balance);
+        currentMonthPayment.month = i;
+        currentMonthPayment.interestPayment = currentMonthPayment.balance * (loan.interestRate / 1200);
+        currentMonthPayment.principalPayment = loan.totalMonthlyPayment - currentMonthPayment.interestPayment;
+        currentMonthPayment.totalInterestPaid += currentMonthPayment.interestPayment
+        currentMonthPayment.balance -= currentMonthPayment.principalPayment;
+        populateBreakdown(loan, currentMonthPayment);
     }
     return loan;
 }
 
-function populateBreakdown(month, loan, principalPayment, interestPayment, balance) {
+function populateBreakdown(loan, currentMonthPayment) {
     const tableRowTemplate = document.getElementById('table-row-template');
     const paymentBreakdownTable = document.getElementById('payment-breakdown-table');
 
     let tableRowCopy = tableRowTemplate.content.cloneNode(true);
-    tableRowCopy.querySelector('[data-id="month"]').innerText = month;
+    tableRowCopy.querySelector('[data-id="month"]').innerText = currentMonthPayment.month;
     tableRowCopy.querySelector('[data-id="payment"]').innerText = convertToUSD(loan.totalMonthlyPayment);
-    tableRowCopy.querySelector('[data-id="principal"]').innerText = convertToUSD(principalPayment);
-    tableRowCopy.querySelector('[data-id="interest"]').innerText = convertToUSD(interestPayment);
-    tableRowCopy.querySelector('[data-id="totalInterest"]').innerText = convertToUSD(loan.totalInterest);
-    if (balance < 0) tableRowCopy.querySelector('[data-id="balance"]').innerText = '$0.00';
-    else tableRowCopy.querySelector('[data-id="balance"]').innerText = convertToUSD(balance);
+    tableRowCopy.querySelector('[data-id="principal"]').innerText = convertToUSD(currentMonthPayment.principalPayment);
+    tableRowCopy.querySelector('[data-id="interest"]').innerText = convertToUSD(currentMonthPayment.interestPayment);
+    tableRowCopy.querySelector('[data-id="totalInterest"]').innerText = convertToUSD(currentMonthPayment.totalInterestPaid);
+    if (currentMonthPayment.balance < 0) tableRowCopy.querySelector('[data-id="balance"]').innerText = '$0.00';
+    else tableRowCopy.querySelector('[data-id="balance"]').innerText = convertToUSD(currentMonthPayment.balance);
 
     paymentBreakdownTable.appendChild(tableRowCopy)
 }

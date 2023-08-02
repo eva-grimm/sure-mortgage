@@ -36,9 +36,9 @@ function cleanSlate() {
 }
 
 function regex(input) {
-    const pattern = /[^0-9]/g;
+    const pattern = /[^0-9\-]/g;
     let numbers = input.replace(pattern, '')
-    if (numbers == '') {
+    if (numbers == '' || numbers <= 0) {
         const outputColumn = document.getElementById('output-column');
         const errorMessage = document.getElementById('error-message');
         const alert = document.getElementById('alert');
@@ -47,7 +47,6 @@ function regex(input) {
         alert.classList.remove('d-none')
         outputColumn.querySelector('.alert').classList.add('alert-danger')
         errorMessage.innerHTML += `'${input}' is not a valid entry<br>`;
-        return false;
     } else return numbers;
 }
 

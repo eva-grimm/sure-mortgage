@@ -111,9 +111,9 @@
                         }
                         
                         function regex(input) {
-                            const pattern = /[^0-9]/g;
+                            const pattern = /[^0-9\-]/g;
                             let numbers = input.replace(pattern, '')
-                            if (numbers == '') {
+                            if (numbers == '' || numbers &lt;= 0) {
                                 const outputColumn = document.getElementById('output-column');
                                 const errorMessage = document.getElementById('error-message');
                                 const alert = document.getElementById('alert');
@@ -122,7 +122,6 @@
                                 alert.classList.remove('d-none')
                                 outputColumn.querySelector('.alert').classList.add('alert-danger')
                                 errorMessage.innerHTML += `'${input}' is not a valid entry&lt;br>`;
-                                return false;
                             } else return numbers;
                         }
                         
@@ -217,8 +216,9 @@
                     provided loan terms. It begins by calling cleanSlate() to reset the HTML elements to their defaults
                     (other than the app logo being visible). It then retrieves the loan terms, runs passes each to
                     regex() as an argument, and parses the results as floats (except for term months, which is parsed as
-                    an integer). It finally checks whether any of the provided terms is not a number and, if not, calls
-                    calculate(), passing the loan amount, term in months, and interest rate as arguments.
+                    an integer). It finally checks whether any of the provided terms is not a number, which will be the
+                    case if any of the values provided by the user are not numbers greater than 0. If all is will, it
+                    calls calculate(), passing the loan amount, term in months, and interest rate as arguments.
                 </p>
 
                 <h5>cleanSlate()</h5>
@@ -233,13 +233,14 @@
                 <p>
                     This function's purpose is verifying the user has provided a valid input, which it accepts as an
                     argument, 'input'. It begins by declaring a constant, global regex pattern that excludes anything
-                    that is not the numbers 0-9, then it uses that pattern to remove all characters in input that do not
-                    match the pattern.
+                    that is not the numbers 0-9 or a '-', then it uses that pattern to remove all characters in input
+                    that do not match the pattern.
                 </p>
                 <p>
-                    Once the pattern is run, the function checks if input is now a blank string. If so, it finds the
-                    HTML elements it needs to display an error message and declares them as constants. It then displays
-                    an error message that explains the input data is bad, and which inputs are at issue.
+                    Once the pattern is run, the function checks if input is now a blank string or a negative number. If
+                    so, it finds the HTML elements it needs to display an error message and declares them as constants.
+                    It then displays an error message that explains the input data is bad, which inputs are at issue,
+                    and will not return a value, ensuring getTerms() does not run calculate() later.
                 </p>
                 <p>
                     If the input is blank after excluding non-numbers, then the function returns a boolean of false.

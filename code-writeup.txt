@@ -1,0 +1,7 @@
+<p>This applet is a loan calculator that takes the basic terms of a loan and provides the overall costs of it and a breakdown of each month's payment. It is structured in seven functions, and its HTML includes one template and an eventListener. The eventListener calls the entry point, getTerms(). Let's dive in.</p>
+
+<h5>The Template</h5>
+The applet uses one template, table-row-template. This template is a simple 'tr' tag encasing mulitple 'td' tags with data-ids matching the properties of loan elements and is used by populateTable() to build the loan breakdown table at the bottom of the applet page.
+
+<h5>The Event Listener</h5>
+The applet's HTML has an event listener embedded using a script tag. The script gets the form used to obtain the loan terms, and it listens for a submit event. Once triggered, it prevents the page from reloading and calls getTerms().
